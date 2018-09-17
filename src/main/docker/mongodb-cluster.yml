@@ -1,0 +1,16 @@
+version: '2'
+services:
+    canya_gateway-mongodb:
+        image: mongo:3.6.3
+        ports:
+            - "27017:27017"
+        command: mongos --configdb canya_gateway-mongodb-config
+    canya_gateway-mongodb-node:
+        build:
+            context: .
+            dockerfile: mongodb/MongoDB.Dockerfile
+        command: mongod --replSet rs1 --noprealloc --smallfiles
+    canya_gateway-mongodb-config:
+        image: mongo:3.6.3
+        container_name: canya_gateway-mongodb-config
+        command: mongod --noprealloc --smallfiles --configsvr --dbpath /data/db

@@ -1,0 +1,18 @@
+                                                                                                                 
+        CCCCCCCCCCCCC               AAA               NNNNNNNN        NNNNNNNNEEEEEEEEEEEEEEEEEEEEEE                    
+     CCC::::::::::::C              A:::A              N:::::::N       N::::::NE::::::::::::::::::::E                    
+   CC:::::::::::::::C             A:::::A             N::::::::N      N::::::NE::::::::::::::::::::E                    
+  C:::::CCCCCCCC::::C            A:::::::A            N:::::::::N     N::::::NEE::::::EEEEEEEEE::::E                    
+ C:::::C       CCCCCC           A:::::::::A           N::::::::::N    N::::::N  E:::::E       EEEEEExxxxxxx      xxxxxxx
+C:::::C                        A:::::A:::::A          N:::::::::::N   N::::::N  E:::::E              x:::::x    x:::::x 
+C:::::C                       A:::::A A:::::A         N:::::::N::::N  N::::::N  E::::::EEEEEEEEEE     x:::::x  x:::::x  
+C:::::C                      A:::::A   A:::::A        N::::::N N::::N N::::::N  E:::::::::::::::E      x:::::xx:::::x   
+C:::::C                     A:::::A     A:::::A       N::::::N  N::::N:::::::N  E:::::::::::::::E       x::::::::::x    
+C:::::C                    A:::::AAAAAAAAA:::::A      N::::::N   N:::::::::::N  E::::::EEEEEEEEEE        x::::::::x     
+C:::::C                   A:::::::::::::::::::::A     N::::::N    N::::::::::N  E:::::E                  x::::::::x     
+ C:::::C       CCCCCC    A:::::AAAAAAAAAAAAA:::::A    N::::::N     N:::::::::N  E:::::E       EEEEEE    x::::::::::x    
+  C:::::CCCCCCCC::::C   A:::::A             A:::::A   N::::::N      N::::::::NEE::::::EEEEEEEE:::::E   x:::::xx:::::x   
+   CC:::::::::::::::C  A:::::A               A:::::A  N::::::N       N:::::::NE::::::::::::::::::::E  x:::::x  x:::::x  
+     CCC::::::::::::C A:::::A                 A:::::A N::::::N        N::::::NE::::::::::::::::::::E x:::::x    x:::::x 
+        CCCCCCCCCCCCCAAAAAAA                   AAAAAAANNNNNNNN         NNNNNNNEEEEEEEEEEEEEEEEEEEEEExxxxxxx      xxxxxxx
+                                                                                 
