@@ -18,6 +18,15 @@ public class ETHP {
 	private long holdersCount;
 	private long ethTransfersCount;
 	private long countOps;
+	private boolean status;
+
+	public boolean isStatus() {
+		return status;
+	}
+
+	public void setStatus(boolean status) {
+		this.status = status;
+	}
 
 	public String getAddress() {
 		return address;

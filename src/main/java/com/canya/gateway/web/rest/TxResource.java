@@ -207,7 +207,10 @@ public class TxResource {
 					System.out.println(url);
 
 					HttpClient client = HttpClientBuilder.create().build();
-					if (counter == 120) {
+					if (counter == 360) {
+						Transaction txData = transactionRepository.findOneByKey(tx.getKey());
+						txData.setStatus(Status.TIMEOUT.name());
+						transactionRepository.save(txData);
 						timer.cancel();
 					}
 
@@ -236,7 +239,7 @@ public class TxResource {
 						Double value = Double.parseDouble(ethplorer.getValue()) / 1000000000000000000l;
 
 						if (StringUtils.equals(compareDates(dateString, dateFormat.format(date)), "after")
-								&& Double.compare(value, comparedValue) == 0 && StringUtils.equalsIgnoreCase(ethplorer.getFrom(), tx.getAddress())) {
+								&& Double.compare(value, comparedValue) == 0) {
 							log.debug("Tx Processed {}", tx.getKey());
 							System.out.println("Tx Processed {}");
 							Transaction txData = transactionRepository.findOneByKey(tx.getKey());
@@ -464,11 +467,22 @@ public class TxResource {
 					+ txData.getAddress() + "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
 
 			Timer timer = new Timer();
-			long Seconds = 8;
+			long Seconds = 10;
 			timer.schedule(new TimerTask() {
+
+				int counter = 0;
+
 				@Override
 				public void run() {
 					try {
+
+						if (counter == 360) {
+							Transaction txData = transactionRepository.findOneByKey(txDatac.getKey());
+							txData.setStatus(Status.TIMEOUT.name());
+							transactionRepository.save(txData);
+							timer.cancel();
+						}
+						counter++;
 						HttpClient client = HttpClientBuilder.create().build();
 						HttpGet request = new HttpGet(url);
 						HttpResponse response = client.execute(request);

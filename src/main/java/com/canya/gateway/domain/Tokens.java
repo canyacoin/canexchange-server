@@ -82,4 +82,10 @@ public class Tokens extends AbstractAuditingEntity implements Serializable {
 		this.address = address;
 	}
 
+	@Override
+	public String toString() {
+		return "Tokens [id=" + id + ", tokenid=" + tokenid + ", name=" + name + ", symbol=" + symbol + ", address="
+				+ address + ", decimal=" + decimal + "]";
+	}
+
 }

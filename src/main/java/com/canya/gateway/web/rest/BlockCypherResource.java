@@ -68,6 +68,8 @@ public class BlockCypherResource {
 
 	private final TokenRepository tokenRepository;
 
+	List<TokenAddress> tokens;
+
 	public BlockCypherResource(UserService userService, UserRepository userRepository, MailService mailService,
 			TokensRepository tokensRepository, TokenRepository tokenRepository) {
 		this.userService = userService;
@@ -75,6 +77,8 @@ public class BlockCypherResource {
 		this.mailService = mailService;
 		this.tokensRepository = tokensRepository;
 		this.tokenRepository = tokenRepository;
+
+		tokens = tokenRepository.findAll();
 	}
 
 	@GetMapping("/getGas")
@@ -140,51 +144,49 @@ public class BlockCypherResource {
 	@Timed
 	public ResponseEntity<List<TokenAddress>> saveToken() throws IOException, ParseException, URISyntaxException {
 
-		List<TokenAddress> tokens = tokenRepository.findAll();
-
 		return ResponseEntity.created(new URI("/api/bancor")).body(tokens);
 	};
 
-	@GetMapping("/bancortest")
-	@Timed
-	public ResponseEntity<List<TokenAddress>> bancortest()
-			throws IOException, ParseException, URISyntaxException, InterruptedException {
-
-		File file = new File(Globals.ERC20_PATH_SAMPLE);
-
-		BufferedReader br = new BufferedReader(new FileReader(file));
-
-		String st;
-		String data = "";
-		while ((st = br.readLine()) != null)
-			data += st;
-
-		br.close();
-
-		Gson gson = new Gson();
-		Type type = new TypeToken<List<TokenAddress>>() {
-		}.getType();
-		List<TokenAddress> tokenAddress = gson.fromJson(data, type);
-
-		List<TokenAddress> tokenAddressF = new ArrayList<>();
-
-		for (TokenAddress tA : tokenAddress) {
-			RestTemplate rt = new RestTemplate();
-			rt.getMessageConverters().add(new StringHttpMessageConverter());
-			System.out.println("http://api.ethplorer.io/getTokenInfo/" + tA.getAddress() + "?apiKey=freekey");
-			String uri = new String("http://api.ethplorer.io/getTokenInfo/" + tA.getAddress() + "?apiKey=freekey");
-			ETHP cpc = rt.getForObject(uri, ETHP.class);
-
-			Thread.sleep(2500);
-			if (StringUtils.equals(tA.getAddress(), cpc.getAddress())) {
-				tA.setDecimals(cpc.getDecimals());
-				tokenAddressF.add(tA);
-				tokenRepository.save(tA);
-			}
-		}
-
-		return ResponseEntity.created(new URI("/api/bancor")).body(tokenAddressF);
-	};
+//	@GetMapping("/bancortest")
+//	@Timed
+//	public ResponseEntity<List<TokenAddress>> bancortest()
+//			throws IOException, ParseException, URISyntaxException, InterruptedException {
+//
+//		File file = new File(Globals.ERC20_PATH_SAMPLE);
+//
+//		BufferedReader br = new BufferedReader(new FileReader(file));
+//
+//		String st;
+//		String data = "";
+//		while ((st = br.readLine()) != null)
+//			data += st;
+//
+//		br.close();
+//
+//		Gson gson = new Gson();
+//		Type type = new TypeToken<List<TokenAddress>>() {
+//		}.getType();
+//		List<TokenAddress> tokenAddress = gson.fromJson(data, type);
+//
+//		List<TokenAddress> tokenAddressF = new ArrayList<>();
+//
+//		for (TokenAddress tA : tokenAddress) {
+//			RestTemplate rt = new RestTemplate();
+//			rt.getMessageConverters().add(new StringHttpMessageConverter());
+//			System.out.println("http://api.ethplorer.io/getTokenInfo/" + tA.getAddress() + "?apiKey=freekey");
+//			String uri = new String("http://api.ethplorer.io/getTokenInfo/" + tA.getAddress() + "?apiKey=freekey");
+//			ETHP cpc = rt.getForObject(uri, ETHP.class);
+//
+//			Thread.sleep(2500);
+//			if (StringUtils.equals(tA.getAddress(), cpc.getAddress())) {
+//				tA.setDecimals(cpc.getDecimals());
+//				tokenAddressF.add(tA);
+//				tokenRepository.save(tA);
+//			}
+//		}
+//
+//		return ResponseEntity.created(new URI("/api/bancor")).body(tokenAddressF);
+//	};
 
 	@GetMapping("/getdata")
 	@Timed
@@ -200,18 +202,21 @@ public class BlockCypherResource {
 		rt.getMessageConverters().add(new StringHttpMessageConverter());
 		String uri = new String("https://api.coinmarketcap.com/v2/listings/");
 		cpcListing cpc = rt.getForObject(uri, cpcListing.class);
-		for (Data dat : cpc.getData()) {
-			JSONObject jsonObject = (JSONObject) obj.get("data");
 
-			for (Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext();) {
-				String key = (String) iterator.next();
+		JSONObject jsonObject = (JSONObject) obj.get("data");
+
+		for (Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext();) {
+			String key = (String) iterator.next();
+
+			for (Data dat : cpc.getData()) {
 				if (!StringUtils.contains(key, "BNT") && StringUtils.contains(dat.getSymbol(), key)) {
 					Tokens tokens = new Tokens();
 					tokens.setTokenid(dat.getId());
 					tokens.setName(dat.getName());
 					tokens.setSymbol(key);
 
-					tokensRepository.save(tokens);
+					System.out.println(tokens);
+					// tokensRepository.save(tokens);
 				}
 			}
 		}
