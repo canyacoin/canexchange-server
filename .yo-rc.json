@@ -1,0 +1,38 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "com.canya.gateway"
+    },
+    "jhipsterVersion": "5.5.0",
+    "applicationType": "monolith",
+    "baseName": "canpay",
+    "packageName": "com.canya.gateway",
+    "packageFolder": "com/canya/gateway",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "no",
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "prodDatabaseType": "mysql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": false,
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "MDljMmM2YTdiNTNjZjNmYTRiODZhOTZiZjk2MDE0YjhhY2VjOTQ2YjVhOThkYjQyZWY5ZGU2MDZjOTM0ZGJhNTBjNDA3OWFhYjQ5MmUyZTg0YjY2ZjNkNjViMTY4Mjk3YjgyYjgwOTgwZGZlNTNhOTIzZjBkMWI0MmZiNDVkMGM=",
+    "enableTranslation": false,
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "clientPackageManager": "npm",
+    "skipClient": true,
+    "gcpProjectId": "canex-217605",
+    "gcpCloudSqlInstanceName": "canex-217605:us-central1:canya",
+    "gcpCloudSqlUserName": "canya",
+    "gaeServiceName": "canpay",
+    "gaeLocation": "australia-southeast1",
+    "gaeInstanceClass": "B8",
+    "gaeScalingType": "manual",
+    "gaeInstances": "1"
+  }
+}
