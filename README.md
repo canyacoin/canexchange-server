@@ -17,6 +17,10 @@
 	`symbol` of erc20 token
 	`tokenid` is image file name of erc20 token. Please refer front-end `assets/tokens` folder.
 	
+## Database
+
+	SQL script is stored in `src/main/resources/database`
+	
 	
 ## Run App Engine DevServer Locally: 
 	
