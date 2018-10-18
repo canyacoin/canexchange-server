@@ -16,6 +16,17 @@
 	`name` of erc20 token
 	`symbol` of erc20 token
 	`tokenid` is image file name of erc20 token. Please refer front-end `assets/tokens` folder.
+	
+	
+## Run App Engine DevServer Locally: 
+	
+	./mvnw appengine:run -DskipTests -Pprod,no-liquibase
+	
+
+## Deploy to App Engine:
+
+	./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase
+	
 
 ## Development
 
