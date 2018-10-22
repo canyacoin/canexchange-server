@@ -19,6 +19,15 @@ public class TokenAddress extends AbstractAuditingEntity implements Serializable
 	private String address;
 	private String symbol;
 	private String decimals;
+	private int status;
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
 
 	public int getTokenid() {
 		return tokenid;

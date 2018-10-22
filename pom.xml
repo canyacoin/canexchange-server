@@ -235,6 +235,11 @@
 			<artifactId>liquibase-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-storage</artifactId>
+			<version>1.17.0</version>
+		</dependency>
+		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 		</dependency>

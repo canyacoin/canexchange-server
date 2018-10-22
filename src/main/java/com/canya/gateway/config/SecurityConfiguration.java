@@ -100,7 +100,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .antMatchers("/api/test").permitAll().antMatchers("/api/order/**").permitAll()
 		.antMatchers("/api/bancor").permitAll().antMatchers("/api/getdata").permitAll()
 		.antMatchers("/api/getGas**").permitAll().antMatchers("/api/bancortest").permitAll()
-		
+		.antMatchers("/api/getbyaddress/**").permitAll()
 		.antMatchers("/api/getunique").permitAll().antMatchers("/api/staging/**").permitAll()
 		.antMatchers("/api/saveToken").permitAll().antMatchers("/api/getTokens").permitAll()
 		.antMatchers("/api/sendMail").permitAll().antMatchers("/api/sendStagingMail").permitAll()

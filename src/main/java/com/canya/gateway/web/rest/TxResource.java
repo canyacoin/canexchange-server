@@ -1,12 +1,18 @@
 package com.canya.gateway.web.rest;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,6 +23,7 @@ import java.util.TimerTask;
 import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -48,6 +55,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import com.canya.gateway.domain.Transaction;
+import com.canya.gateway.repository.ConfigRepository;
 import com.canya.gateway.repository.TransactionRepository;
 import com.canya.gateway.repository.UserRepository;
 import com.canya.gateway.service.MailService;
@@ -58,9 +66,13 @@ import com.canya.gateway.service.dto.Etherscan;
 import com.canya.gateway.service.dto.Result;
 import com.canya.gateway.service.dto.Token;
 import com.canya.gateway.service.dto.TransactionDTO;
-import com.canya.gateway.web.rest.util.Globals;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.ReadChannel;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 
 import io.github.jhipster.config.JHipsterProperties;
 
@@ -93,14 +105,30 @@ public class TxResource {
 
 	private final SpringTemplateEngine templateEngine;
 
-	private static final String EMAIL = "email";
+	private final ConfigRepository configRepository;
 
 	private static String key = "T4RFNMPATQFVFE7NSNYCXF2R89CWM4HGBK";
+
+	private static String CAN_NETWORK = null;
+
+	private static String ETHER_ADDRESS = null;
+
+	private static String CAN_INFURA = null;
+
+	private static String CAN_PASSWORD = null;
+
+	private static String CAN_CONTRACT = null;
+	private static String PROJECT_ID = null;
+	private static String BUCKET_NAME = null;
+	private static String OBJECT_NAME = null;
+	private static String GCLOUD_KEY = null;
+	Credentials credentials = null;
+	private static InputStream inputStream = null;
 
 	public TxResource(UserRepository userRepository, UserService userService, MailService mailService,
 			TransactionRepository transactionRepository, JHipsterProperties jHipsterProperties,
 			JavaMailSender javaMailSender, MessageSource messageSource, SpringTemplateEngine templateEngine,
-			TransactionService transactionService ) {
+			TransactionService transactionService, ConfigRepository configRepository) {
 
 		this.userRepository = userRepository;
 		this.userService = userService;
@@ -111,14 +139,37 @@ public class TxResource {
 		this.messageSource = messageSource;
 		this.templateEngine = templateEngine;
 		this.transactionService = transactionService;
+		this.configRepository = configRepository;
+
+		PROJECT_ID = configRepository.findOneByKey("PROJECT_ID").getValue();
+		CAN_NETWORK = configRepository.findOneByKey("CAN_NETWORK").getValue();
+		ETHER_ADDRESS = configRepository.findOneByKey("ETHER_ADDRESS").getValue();
+		CAN_INFURA = configRepository.findOneByKey("CAN_INFURA").getValue();
+		CAN_CONTRACT = configRepository.findOneByKey("CAN_CONTRACT").getValue();
+		BUCKET_NAME = configRepository.findOneByKey("BUCKET_NAME").getValue();
+		OBJECT_NAME = configRepository.findOneByKey("OBJECT_NAME").getValue();
+		CAN_PASSWORD = configRepository.findOneByKey("CAN_PASSWORD").getValue();
+		GCLOUD_KEY = configRepository.findOneByKey("GCLOUD_KEY").getValue();
+
+		try {
+			InputStream stream = new ByteArrayInputStream(GCLOUD_KEY.getBytes(StandardCharsets.UTF_8));
+
+			StorageOptions options = StorageOptions.newBuilder().setProjectId(PROJECT_ID)
+					.setCredentials(GoogleCredentials.fromStream(stream)).build();
+
+			Storage storage = options.getService();
+			Blob blob = storage.get(BUCKET_NAME, OBJECT_NAME);
+			ReadChannel r = blob.reader();
+			inputStream = Channels.newInputStream(r);
+			credentials = WalletUtils.loadCredentials(CAN_PASSWORD, stream2file(inputStream));
+		} catch (Exception e) {
+		}
 	}
 
 	public enum Status {
 		INITIATED, TRANSFERRED, CONNECTED, DOWN, IDENTIFIED, AUTHENTICATED, AUTHFAIL, COMPLETE, ERROR, READY, TIMEOUT,
 		NEEDS_INPUT, CREATED, RESTART, MOREINFO, RESTARTED, UNRESTARTABLE
 	}
-
-	
 
 	/**
 	 * POST /saveTransaction : register the user.
@@ -131,7 +182,7 @@ public class TxResource {
 		transaction.setStatus(Status.INITIATED.name());
 		Transaction tx = transactionService.saveTransaction(transaction);
 
-		log.debug("Tx Registered {}", tx );
+		log.debug("Tx Registered {}", tx);
 
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date = new Date();
@@ -150,21 +201,20 @@ public class TxResource {
 					String url = "";
 					if (StringUtils.equals(tx.getCurrency(), "ETH")) {
 						transaction.setStatus(Status.CONNECTED.name());
-						url = "http://api" + Globals.CAN_NETWORK
-								+ "etherscan.io/api?module=account&action=txlist&address=" + Globals.ETHER_ADDRESS
-								+ "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
+						url = "http://api" + CAN_NETWORK + "etherscan.io/api?module=account&action=txlist&address="
+								+ ETHER_ADDRESS + "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
 						comparedValue = Double.parseDouble(tx.getEth());
 					} else {
 
-						url = "http://api" + Globals.CAN_NETWORK
-								+ "etherscan.io/api?module=account&action=tokentx&address=" + Globals.ETHER_ADDRESS
-								+ "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
+						url = "http://api" + CAN_NETWORK + "etherscan.io/api?module=account&action=tokentx&address="
+								+ ETHER_ADDRESS + "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
 						comparedValue = Double.parseDouble(tx.getEth());
 					}
 
 					System.out.println(url);
 
 					HttpClient client = HttpClientBuilder.create().build();
+
 					if (counter == 360) {
 						Transaction txData = transactionRepository.findOneByOrderid(tx.getOrderid());
 						txData.setStatus(Status.TIMEOUT.name());
@@ -254,15 +304,14 @@ public class TxResource {
 	@PostMapping("/sendMail")
 	@Timed
 	@ResponseStatus(HttpStatus.CREATED)
-	public void sentMail(@RequestBody Transaction tx) {
-		System.out.println(tx.toString());
-		Transaction transaction = transactionRepository.findOneByOrderid(tx.getOrderid());
+	public void sentMail(@RequestBody String orderId) {
+		System.out.println("Email send for Id " + orderId);
+		Transaction transaction = transactionRepository.findOneByOrderid(orderId);
 		Context context = new Context();
 		context.setVariable("order", transaction.getOrderid());
 		context.setVariable("email", transaction.getEmail());
-		context.setVariable("hash", "https://" + Globals.CAN_NETWORK + "etherscan.io/tx/" + transaction.getHash());
-		context.setVariable("can",
-				"https://" + Globals.CAN_NETWORK + "etherscan.io/tx/" + transaction.getHashethertoaccount());
+		context.setVariable("hash", "https://" + CAN_NETWORK + "etherscan.io/tx/" + transaction.getHash());
+		context.setVariable("can", "https://" + CAN_NETWORK + "etherscan.io/tx/" + transaction.getHashethertoaccount());
 		context.setVariable("amount", transaction.getAmount() + " CAN");
 		context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
 		String content = templateEngine.process("mail/transactionConfirm", context);
@@ -279,17 +328,16 @@ public class TxResource {
 	@PostMapping("/sendStagingMail")
 	@Timed
 	@ResponseStatus(HttpStatus.CREATED)
-	public void sendStagingMail(@RequestBody Transaction tx) {
-
-		Transaction transaction = transactionRepository.findOneByOrderid(tx.getOrderid());
-
+	public void sendStagingMail(@RequestBody String orderId) {
+		System.out.println("Email send for Id " + orderId);
+		Transaction transaction = transactionRepository.findOneByOrderid(orderId);
 		Context context = new Context();
 		context.setVariable("order", transaction.getOrderid());
 		context.setVariable("email", transaction.getEmail());
 		context.setVariable("hash", transaction.getHash());
 		context.setVariable("can", "PENDING");
 		context.setVariable("amount", transaction.getAmount() + " CAN");
-		context.setVariable("url", "https://" + Globals.CAN_NETWORK + "io/tx/" + transaction.getAddress());
+		context.setVariable("url", "https://" + CAN_NETWORK + "io/tx/" + transaction.getAddress());
 		context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
 		String content = templateEngine.process("mail/transactionConfirm", context);
 		sendEmail(transaction.getEmail(), "Transaction Successful", content, false, true);
@@ -352,10 +400,8 @@ public class TxResource {
 	@GetMapping("/staging/{id}")
 	@Timed
 	public ResponseEntity<Transaction> getAllUsers(@PathVariable String id) {
-		System.out.println(id);
 		try {
 			Transaction transaction = transactionRepository.findOneByOrderid(id);
-			System.out.println(transaction.getStatus());
 			return new ResponseEntity<Transaction>(transaction, HttpStatus.ACCEPTED);
 
 		} catch (Exception e) {
@@ -378,6 +424,15 @@ public class TxResource {
 
 	}
 
+	public static File stream2file(InputStream in) throws IOException {
+		final File tempFile = File.createTempFile("src/main/resources/stream2file", ".tmp");
+		tempFile.deleteOnExit();
+		try (FileOutputStream out = new FileOutputStream(tempFile)) {
+			IOUtils.copy(in, out);
+		}
+		return tempFile;
+	}
+
 	@PostMapping("/staging")
 	@Async
 	public void sendStagingActivity(@RequestBody TransactionDTO txData) {
@@ -387,27 +442,26 @@ public class TxResource {
 
 		txData.setStatus(Status.AUTHENTICATED.name());
 
-		Web3j web3 = Web3j.build(new HttpService(Globals.CAN_INFURA));
+		Web3j web3 = Web3j.build(new HttpService(CAN_INFURA));
 		Transaction txDatac = transactionRepository.findOneByOrderid(txData.getKey());
 
-		Credentials credentials;
 		try {
-			credentials = WalletUtils.loadCredentials(Globals.CAN_PASSWORD, Globals.CAN_KEY);
+
 			BigInteger gasprice = web3.ethGasPrice().send().getGasPrice();
 			System.out.println("Gas Price " + gasprice);
 			log.debug("Gas Price {}", gasprice);
 			BigInteger gaslimit = BigInteger.valueOf(90000);
 			BigDecimal value = new BigDecimal(txData.getAmount());
-			CanYaCoin contract = CanYaCoin.load(Globals.CAN_CONTRACT, web3, credentials, gasprice, gaslimit);
+			CanYaCoin contract = CanYaCoin.load(CAN_CONTRACT, web3, credentials, gasprice, gaslimit);
 
 			BigDecimal valueToMultiply = new BigDecimal("1000000");
 
 			BigDecimal s = value.multiply(valueToMultiply);
 
-			System.out.println("address is " + txDatac.getAddress());
+			System.out.println("Address is " + txDatac.getAddress());
 			TransactionReceipt transactionReceipt = contract.transfer(txDatac.getAddress(), s.toBigInteger()).send();
-			System.out.println("hash " + transactionReceipt.getTransactionHash());
-			System.out.println("Success");
+			System.out.println("HASH " + transactionReceipt.getTransactionHash());
+			System.out.println("SUCCESS");
 			txDatac.setStatus(Status.TRANSFERRED.name());
 			txDatac.setHashethertoaccount(transactionReceipt.getTransactionHash());
 			log.debug("CAN Sent {}", txDatac);
@@ -421,7 +475,7 @@ public class TxResource {
 
 		if (StringUtils.equals(txDatac.getStatus(), Status.TRANSFERRED.name())) {
 
-			String url = "http://api" + Globals.CAN_NETWORK + "etherscan.io/api?module=account&action=tokentx&address="
+			String url = "http://api" + CAN_NETWORK + "etherscan.io/api?module=account&action=tokentx&address="
 					+ txData.getAddress() + "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
 
 			Timer timer = new Timer();
@@ -498,10 +552,22 @@ public class TxResource {
 	@Timed
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveTransaction() throws ClientProtocolException, IOException {
+		InputStream inputStream = null;
+		Credentials credentials = null;
+		try {
+			InputStream stream = new ByteArrayInputStream(GCLOUD_KEY.getBytes(StandardCharsets.UTF_8));
 
-		String test = "xx001";
-		// mailService.sendEmailFromTemplate("my3d3d@gmail.com", test,
-		// "mail/transactionConfirm");
+			StorageOptions options = StorageOptions.newBuilder().setProjectId(PROJECT_ID)
+					.setCredentials(GoogleCredentials.fromStream(stream)).build();
+
+			Storage storage = options.getService();
+			Blob blob = storage.get(BUCKET_NAME, OBJECT_NAME);
+			ReadChannel r = blob.reader();
+			inputStream = Channels.newInputStream(r);
+			credentials = WalletUtils.loadCredentials(CAN_PASSWORD, stream2file(inputStream));
+
+		} catch (Exception e) {
+		}
 
 	}
 

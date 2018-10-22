@@ -98,21 +98,8 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
             metricRegistry);
         servletContext.setAttribute(MetricsServlet.METRICS_REGISTRY,
             metricRegistry);
-
-        log.debug("Registering Metrics Filter");
-        FilterRegistration.Dynamic metricsFilter = servletContext.addFilter("webappMetricsFilter",
-            new InstrumentedFilter());
-
-        metricsFilter.addMappingForUrlPatterns(disps, true, "/*");
-        metricsFilter.setAsyncSupported(true);
-
-        log.debug("Registering Metrics Servlet");
-        ServletRegistration.Dynamic metricsAdminServlet =
-            servletContext.addServlet("metricsServlet", new MetricsServlet());
-
-        metricsAdminServlet.addMapping("/management/metrics/*");
-        metricsAdminServlet.setAsyncSupported(true);
-        metricsAdminServlet.setLoadOnStartup(2);
+ 
+ 
     }
 
     @Bean

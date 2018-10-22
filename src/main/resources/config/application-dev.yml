@@ -21,7 +21,7 @@ logging:
 
 spring:
     profiles:
-        active: prod,no-liquibase,no-swagger
+        active: prod 
         include:
             - swagger
             # Uncomment to activate TLS for the dev profile
@@ -35,9 +35,9 @@ spring:
         serialization.indent_output: true
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:mysql://localhost:3306/canpay?useUnicode=true&characterEncoding=utf8&useSSL=false
+        url: jdbc:mysql://localhost:3306/canya?useUnicode=true&characterEncoding=utf8&useSSL=false
         username: root
-        password:
+        password: cessna
         hikari:
             auto-commit: false
             data-source-properties:
@@ -58,10 +58,16 @@ spring:
     liquibase:
         contexts: dev
     mail:
-        host: localhost
-        port: 25
-        username:
-        password:
+        host: smtp.sendgrid.net
+        port: 587
+        username: avesh.canya
+        password: prediator1@A
+        tls: true
+        protocol: smtp
+        properties.mail.smtp:
+            auth: true
+            starttls.enable: true
+            ssl.trust: smtp.sendgrid.net
     messages:
         cache-duration: PT1S # 1 second, see the ISO 8601 standard
     thymeleaf:

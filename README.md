@@ -2,12 +2,17 @@
 
 ## Configuration
 
-	`CAN_CONTRACT` Contract address for CAN.
-	`CAN_INFURA` Infura key, to generate please visit infura.io
-	`CAN_KEY` Your Wallet Key path.
-	`CAN_PASSWORD` Your wallet key password.
-	`ETHER_ADDRESS` Staging address where ETH would be accepted.
-	
+	To change the config parameters of this application please refer `config` table.
+
+		`CAN_CONTRACT` Contract address for CAN.
+		`CAN_INFURA` Infura key, to generate please visit infura.io
+		`CAN_PASSWORD` Your wallet key password.
+		`ETHER_ADDRESS` Staging address where ETH would be accepted.
+		`GCLOUD_KEY` Your Google AUTH Key JSON.
+		`PROJECT_ID` Your Google project ID.
+		`BUCKET_NAME` Your bucket name to be used.
+		`OBJECT_NAME` Your Wallet Key file name and path in the bucket.
+		
 ## ERC20 Token Listing
 	
 	Refer `tokenerc20` table, the column definition are as follows :-
@@ -16,6 +21,12 @@
 	`name` of erc20 token
 	`symbol` of erc20 token
 	`tokenid` is image file name of erc20 token. Please refer front-end `assets/tokens` folder.
+	`status` is as follows :-
+	
+		There are 3 statues for the tokens
+			1. STATUS `0` - Token is disabled
+			2. STATUS `1` - Token is enabled
+			3. STATUS `2` - Token is enabled but disabled for Metamask
 	
 ## Database
 
