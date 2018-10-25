@@ -24,8 +24,8 @@ deploy:staging:
       name: staging
     script:
       - echo "Deploy to staging target GAE instance with project ID $GCP_PROJECT_ID"
-      - echo -n "$GCP_KEY" > /tmp/key.json
-      - echo -n "+ using GCP KEY for staging deployer " && cat /tmp/key.json
+      - echo -n "$GCP_KEY" > /builds/canya-com/canexchange/key.json
+      - echo -n "+ using GCP KEY for staging deployer " && cat /builds/canya-com/canexchange/key.json
       - gcloud auth activate-service-account --key-file=/tmp/$CI_PIPELINE_ID.json
       - gcloud config set project $GCP_PROJECT_ID
       - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
