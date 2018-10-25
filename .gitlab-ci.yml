@@ -15,7 +15,7 @@ stages:
 
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
-    - mkdir -p `/tmp`
+
     
 deploy:staging:
     image: google/cloud-sdk
