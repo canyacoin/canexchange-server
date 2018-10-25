@@ -13,8 +13,8 @@
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:mysql://google/canya?cloudSqlInstance=canex-217605:us-central1:canya&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false
+        url: jdbc:mysql://google/canexchange?cloudSqlInstance=staging-can-work:australia-southeast1:canwork-staging&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false
         username: canya
-        password: noCans4u!
+        password: 5Dy6ktTqgrQugDb
         hikari:
             maximumPoolSize: 8
