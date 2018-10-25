@@ -15,8 +15,8 @@ stages:
 
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
- 
-
+    - mkdir -p `/tmp`
+    
 deploy:staging:
     image: google/cloud-sdk
     stage: deploy
@@ -26,7 +26,7 @@ deploy:staging:
       - echo "Deploy to staging target GAE instance with project ID $GCP_PROJECT_ID"
       - echo -n "$GCP_KEY" > /builds/canya-com/canexchange/key.json
       - echo -n "+ using GCP KEY for staging deployer " && cat /builds/canya-com/canexchange/key.json
-      - gcloud auth activate-service-account --key-file /builds/canya-com/canexchange/$CI_PIPELINE_ID.json
+      - gcloud auth activate-service-account --key-file /builds/canya-com/canexchange/key.json
       - gcloud config set project $GCP_PROJECT_ID
       - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
     
