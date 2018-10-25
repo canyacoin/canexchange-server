@@ -1,3 +1,4 @@
+image: jhipster/jhipster:v5.5.0
 
 cache:
     key: "$CI_COMMIT_REF_NAME"
