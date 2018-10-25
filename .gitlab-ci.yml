@@ -15,9 +15,6 @@ stages:
 
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
-    - echo "deb http://packages.cloud.google.com/apt cloud-sdk-jessie main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list
-    - sudo curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-    - sudo apt-get update -qy && sudo apt-get install google-cloud-sdk -qy
 
 maven-compile:
     stage: build
@@ -29,19 +26,24 @@ maven-compile:
             - target/generated-sources/
         expire_in: 1 day
 
-
 maven-package:
     stage: package
     script:
         - ./mvnw verify -Pprod -DskipTests -Dmaven.repo.local=$MAVEN_USER_HOME
-        - echo $GCP_KEY > /tmp/$CI_PIPELINE_ID.json
-        - sudo gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
-        - sudo ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase
     artifacts:
         paths:
             - target/*.war
         expire_in: 1 day
 
+8s-deploy:
+    image: google/cloud-sdk
+    stage: deploy
+    script:
+    - echo "$GCP_KEY" > key.json # Google Cloud service account key
+    - gcloud auth activate-service-account --key-file key.json
+    - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+    - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
+    
 # Uncomment the following line to use gitlabs container registry. You need to adapt the REGISTRY_URL in case you are not using gitlab.com
 #docker-push:
 #    image: docker:latest
