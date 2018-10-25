@@ -21,8 +21,8 @@ before_script:
     image: google/cloud-sdk
     stage: deploy
     script:
-    - echo $GCP_KEY > /gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file /gcloud-service-key.json
+    - echo $GCP_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
     - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
     
 # Uncomment the following line to use gitlabs container registry. You need to adapt the REGISTRY_URL in case you are not using gitlab.com
