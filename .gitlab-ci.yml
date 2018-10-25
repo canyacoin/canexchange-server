@@ -21,7 +21,7 @@ before_script:
     image: google/cloud-sdk
     stage: deploy
     script:
-    - sudo echo $GCP_KEY > /tmp/gcloud-service-key.json
+    - echo $GCP_KEY > /tmp/gcloud-service-key.json
     - sudo gcloud auth activate-service-account --key-file /tmp/gcloud-service-key.json
     - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
     
