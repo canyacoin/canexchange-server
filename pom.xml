@@ -611,6 +611,15 @@
 					<deploy.version>1</deploy.version>
 				</configuration>
 			</plugin>
+<plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>appengine-maven-plugin</artifactId>
+                <version>1.3.2</version>
+<configuration>
+                    <deploy.project>staging-can-work</deploy.project>
+                    <deploy.version>1</deploy.version>
+                </configuration>
+            </plugin>
 			<!-- jhipster-needle-maven-add-plugin -->
 		</plugins>
 		<pluginManagement>

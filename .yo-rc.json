@@ -26,12 +26,12 @@
     "jhiPrefix": "jhi",
     "clientPackageManager": "npm",
     "skipClient": true,
-    "gcpProjectId": "canex-217605",
-    "gcpCloudSqlInstanceName": "canex-217605:us-central1:canya",
+    "gcpProjectId": "staging-can-work",
+    "gcpCloudSqlInstanceName": "staging-can-work:australia-southeast1:canwork-staging",
     "gcpCloudSqlUserName": "canya",
-    "gaeServiceName": "canpay",
-    "gaeLocation": "australia-southeast1",
-    "gaeInstanceClass": "B8",
+    "gaeServiceName": "default",
+    "gaeLocation": "us-central",
+    "gaeInstanceClass": "B1",
     "gaeScalingType": "manual",
     "gaeInstances": "1"
   }
