@@ -15,8 +15,8 @@ stages:
 
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
-    - sudo su -c echo "deb http://packages.cloud.google.com/apt cloud-sdk-jessie main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-    - sudo curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    - echo "deb http://packages.cloud.google.com/apt cloud-sdk-jessie main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list
+    - sudo curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
     - sudo apt-get update -qy && sudo apt-get install google-cloud-sdk -qy
 
 maven-compile:
