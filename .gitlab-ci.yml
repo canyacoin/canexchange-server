@@ -16,31 +16,12 @@ stages:
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
 
-maven-compile:
-    stage: build
-    script:
-        - ./mvnw compile -Dmaven.repo.local=$MAVEN_USER_HOME
-    artifacts:
-        paths:
-            - target/classes/
-            - target/generated-sources/
-        expire_in: 1 day
-
-maven-package:
-    stage: package
-    script:
-        - ./mvnw verify -Pprod -DskipTests -Dmaven.repo.local=$MAVEN_USER_HOME
-    artifacts:
-        paths:
-            - target/*.war
-        expire_in: 1 day
 
 8s-deploy:
     image: google/cloud-sdk
     stage: deploy
     script:
-    - echo "$GCP_KEY" > key.json # Google Cloud service account key
-    - gcloud auth activate-service-account --key-file key.json
+    - echo $GCP_KEY > /tmp/$CI_PIPELINE_ID.json
     - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
     - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
     
