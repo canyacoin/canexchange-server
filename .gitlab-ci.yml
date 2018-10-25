@@ -16,13 +16,29 @@ stages:
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
 
+deploy:staging:
+  stage: deploy
+  environment:
+    name: staging
+  script:
+    - echo $GCP_KEY > /tmp/key.json
+    - echo -n "+ using GCP KEY for staging deployer " && cat /tmp/key.json
+    - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
+  only:
+    - master
+  allow_failure: false
+
 
 8s-deploy:
     image: google/cloud-sdk
     stage: deploy
     script:
-    - echo $GCP_KEY > gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - echo $GCP_KEY > /tmp/key.json
+    - echo -n "+ using GCP KEY for staging deployer " && cat /tmp/key.json
+    - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+    - gcloud config set project $GCP_PROJECT_ID
     - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
     
 # Uncomment the following line to use gitlabs container registry. You need to adapt the REGISTRY_URL in case you are not using gitlab.com
