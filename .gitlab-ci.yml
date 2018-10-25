@@ -1,4 +1,3 @@
-image: canya/canya:v1.0
 
 cache:
     key: "$CI_COMMIT_REF_NAME"
