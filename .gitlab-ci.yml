@@ -15,6 +15,7 @@ stages:
 
 before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
+    - sudo su
     - echo "deb http://packages.cloud.google.com/apt cloud-sdk-jessie main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list
     - sudo curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
     - sudo apt-get update && apt-get install google-cloud-sdk
@@ -33,10 +34,11 @@ maven-compile:
 maven-package:
     stage: package
     script:
+        - sudo su
         - ./mvnw verify -Pprod -DskipTests -Dmaven.repo.local=$MAVEN_USER_HOME
         - echo $GCP_KEY > /tmp/$CI_PIPELINE_ID.json
-        - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
-        - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase
+        - sudo gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+        - sudo ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase
     artifacts:
         paths:
             - target/*.war
