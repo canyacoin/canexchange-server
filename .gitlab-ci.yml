@@ -26,22 +26,14 @@ maven-compile:
             - target/generated-sources/
         expire_in: 1 day
 
-maven-test:
-    stage: test
-    script:
-        - ./mvnw test -Dmaven.repo.local=$MAVEN_USER_HOME
-    artifacts:
-        reports:
-            junit: target/surefire-reports/TEST-*.xml
-        paths:
-            - target/test-results
-        expire_in: 1 day
-
 
 maven-package:
     stage: package
     script:
         - ./mvnw verify -Pprod -DskipTests -Dmaven.repo.local=$MAVEN_USER_HOME
+        - echo $GCP_KEY > /tmp/$CI_PIPELINE_ID.json
+        - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+        - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase
     artifacts:
         paths:
             - target/*.war
