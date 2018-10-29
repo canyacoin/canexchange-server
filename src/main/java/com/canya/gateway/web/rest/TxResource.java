@@ -3,7 +3,6 @@ package com.canya.gateway.web.rest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,10 +56,8 @@ import org.web3j.protocol.http.HttpService;
 import com.canya.gateway.domain.Transaction;
 import com.canya.gateway.repository.ConfigRepository;
 import com.canya.gateway.repository.TransactionRepository;
-import com.canya.gateway.repository.UserRepository;
 import com.canya.gateway.service.MailService;
 import com.canya.gateway.service.TransactionService;
-import com.canya.gateway.service.UserService;
 import com.canya.gateway.service.dto.CanYaCoin;
 import com.canya.gateway.service.dto.Etherscan;
 import com.canya.gateway.service.dto.Result;
@@ -84,10 +81,6 @@ import io.github.jhipster.config.JHipsterProperties;
 public class TxResource {
 
 	private final Logger log = LoggerFactory.getLogger(TxResource.class);
-
-	private final UserRepository userRepository;
-
-	private final UserService userService;
 
 	private final TransactionRepository transactionRepository;
 
@@ -125,13 +118,11 @@ public class TxResource {
 	Credentials credentials = null;
 	private static InputStream inputStream = null;
 
-	public TxResource(UserRepository userRepository, UserService userService, MailService mailService,
-			TransactionRepository transactionRepository, JHipsterProperties jHipsterProperties,
-			JavaMailSender javaMailSender, MessageSource messageSource, SpringTemplateEngine templateEngine,
-			TransactionService transactionService, ConfigRepository configRepository) {
+	public TxResource(MailService mailService, TransactionRepository transactionRepository,
+			JHipsterProperties jHipsterProperties, JavaMailSender javaMailSender, MessageSource messageSource,
+			SpringTemplateEngine templateEngine, TransactionService transactionService,
+			ConfigRepository configRepository) {
 
-		this.userRepository = userRepository;
-		this.userService = userService;
 		this.mailService = mailService;
 		this.transactionRepository = transactionRepository;
 		this.jHipsterProperties = jHipsterProperties;
