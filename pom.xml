@@ -880,5 +880,11 @@
 				<spring.profiles.active>prod${profile.swagger}${profile.no-liquibase},prod-gae</spring.profiles.active>
 			</properties>
 		</profile>
+		<profile>
+			<id>prod-gaep</id>
+			<properties>
+				<spring.profiles.active>prod${profile.swagger}${profile.no-liquibase},prod-gaep</spring.profiles.active>
+			</properties>
+		</profile>
 	</profiles>
 </project>

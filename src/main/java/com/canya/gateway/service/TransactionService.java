@@ -2,38 +2,25 @@ package com.canya.gateway.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.canya.gateway.domain.Transaction;
-import com.canya.gateway.repository.AuthorityRepository;
 import com.canya.gateway.repository.TransactionRepository;
-import com.canya.gateway.repository.UserRepository;
 import com.canya.gateway.service.dto.TransactionDTO;
 
 /**
- * Service class for managing users.
+ * Service class for managing tx.
  */
 @Service
 public class TransactionService {
 
 	private final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
-	private final UserRepository userRepository;
-
 	private final TransactionRepository transactionRepository;
 
-	private final PasswordEncoder passwordEncoder;
 
-	private final AuthorityRepository authorityRepository;
-
-
-	public TransactionService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-			AuthorityRepository authorityRepository,  
+	public TransactionService( 
 			TransactionRepository transactionRepository) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.authorityRepository = authorityRepository;
 		this.transactionRepository = transactionRepository;
 	}
 
@@ -51,7 +38,7 @@ public class TransactionService {
 		transaction.setOrderid(transactionDTO.getKey());
 		transaction.setStatus(transactionDTO.getStatus());
 		transaction.setUsd(transactionDTO.getUsd());
-		
+
 		transactionRepository.save(transaction);
 
 		log.debug("data saved {}", transaction.getOrderid());
