@@ -13,7 +13,7 @@
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:mysql://google/canexchange?cloudSqlInstance=canwork-io:australia-southeast1:canwork-staging&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false
+        url: jdbc:mysql://google/canexchange?cloudSqlInstance=canwork-io:australia-southeast1:canwork-io&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false
         username: canya
         password: 5Dy6ktTqgrQugDb
         hikari:

@@ -29,24 +29,5 @@ deploy:staging:
       - gcloud auth activate-service-account --key-file /builds/canya-com/canexchange/key.json
       - gcloud config set project $GCP_PROJECT_ID
       - ./mvnw appengine:deploy -DskipTests -Pprod,prod-gae,no-liquibase 
+
     
-# Uncomment the following line to use gitlabs container registry. You need to adapt the REGISTRY_URL in case you are not using gitlab.com
-#docker-push:
-#    image: docker:latest
-#    services:
-#        - docker:dind
-#    variables:
-#        REGISTRY_URL: registry.gitlab.com
-#        DOCKER_HOST: tcp://docker:2375
-#        DOCKER_DRIVER: overlay2
-#        IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-#    stage: release
-#    dependencies:
-#        - maven-package
-#    before_script:
-#        - docker info
-#        - cp target/*.war src/main/docker
-#    script:
-#        - docker login -u "gitlab-ci-token" -p "$CI_BUILD_TOKEN" $REGISTRY_URL
-#        - docker build -f src/main/docker/Dockerfile -t $IMAGE_TAG src/main/docker
-#        - docker push $IMAGE_TAG
