@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -36,6 +37,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -115,6 +117,8 @@ public class TxResource {
 	private static String BUCKET_NAME = null;
 	private static String OBJECT_NAME = null;
 	private static String GCLOUD_KEY = null;
+	private static String SENDGRID_USERNAME = null;
+	private static String SENDGRID_PASSWORD = null;
 	Credentials credentials = null;
 	private static InputStream inputStream = null;
 
@@ -141,7 +145,9 @@ public class TxResource {
 		OBJECT_NAME = configRepository.findOneByKey("OBJECT_NAME").getValue();
 		CAN_PASSWORD = configRepository.findOneByKey("CAN_PASSWORD").getValue();
 		GCLOUD_KEY = configRepository.findOneByKey("GCLOUD_KEY").getValue();
-
+		SENDGRID_USERNAME = configRepository.findOneByKey("SENDGRID_USERNAME").getValue();
+		SENDGRID_PASSWORD = configRepository.findOneByKey("SENDGRID_PASSWORD").getValue();
+		
 		try {
 			InputStream stream = new ByteArrayInputStream(GCLOUD_KEY.getBytes(StandardCharsets.UTF_8));
 
@@ -337,6 +343,20 @@ public class TxResource {
 
 	@Async
 	public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
+
+		JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
+
+		javaMailSender.setUsername(SENDGRID_USERNAME);
+		javaMailSender.setPassword(SENDGRID_PASSWORD);
+
+		Properties properties = new Properties();
+		properties.setProperty("mail.transport.protocol", "smtp");
+		properties.setProperty("mail.smtp.auth", "true");
+		properties.setProperty("mail.smtp.starttls.enable", "true");
+ 		properties.setProperty("mail.smtp.host", "smtp.sendgrid.net");
+		properties.setProperty("mail.smtp.port", "587");
+		properties.setProperty("mail.smtp.ssl.trust", "smtp.sendgrid.net");
+		javaMailSender.setJavaMailProperties(properties);
 
 		// Prepare message using a Spring helper
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -543,21 +563,21 @@ public class TxResource {
 	@Timed
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveTransaction() throws ClientProtocolException, IOException {
-		InputStream inputStream = null;
-		Credentials credentials = null;
+
 		try {
-			InputStream stream = new ByteArrayInputStream(GCLOUD_KEY.getBytes(StandardCharsets.UTF_8));
+			Context context = new Context();
+			context.setVariable("order", "fsdf");
+			context.setVariable("email", "fsdf");
+			context.setVariable("hash", "https://" + CAN_NETWORK + "etherscan.io/tx/");
+			context.setVariable("can", "https://" + CAN_NETWORK + "etherscan.io/tx/");
+			context.setVariable("amount", "CAN");
+			context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+			String content = templateEngine.process("mail/transactionConfirm", context);
 
-			StorageOptions options = StorageOptions.newBuilder().setProjectId(PROJECT_ID)
-					.setCredentials(GoogleCredentials.fromStream(stream)).build();
-
-			Storage storage = options.getService();
-			Blob blob = storage.get(BUCKET_NAME, OBJECT_NAME);
-			ReadChannel r = blob.reader();
-			inputStream = Channels.newInputStream(r);
-			credentials = WalletUtils.loadCredentials(CAN_PASSWORD, stream2file(inputStream));
+			sendEmail("my3d3d@gmail.com", "Transaction Successful", content, false, true);
 
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}

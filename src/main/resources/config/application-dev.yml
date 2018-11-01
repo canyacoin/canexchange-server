@@ -60,8 +60,8 @@ spring:
     mail:
         host: smtp.sendgrid.net
         port: 587
-        username: avesh.canya
-        password: prediator1@A
+        username:
+        password:
         tls: true
         protocol: smtp
         properties.mail.smtp:
