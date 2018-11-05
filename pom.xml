@@ -283,10 +283,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -316,11 +313,7 @@
 			<artifactId>spring-boot-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>org.zalando</groupId>
 			<artifactId>problem-spring-web</artifactId>
@@ -345,11 +338,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cloud-connectors</artifactId>
 		</dependency>
-		<!-- Security -->
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-data</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>com.google.cloud.sql</groupId>
 			<artifactId>mysql-socket-factory</artifactId>
@@ -607,19 +596,19 @@
 				<artifactId>appengine-maven-plugin</artifactId>
 				<version>1.3.2</version>
 				<configuration>
-					<deploy.project>canex-217605</deploy.project>
+					<deploy.project>canwork-io</deploy.project>
 					<deploy.version>1</deploy.version>
 				</configuration>
 			</plugin>
-<plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>appengine-maven-plugin</artifactId>
-                <version>1.3.2</version>
-<configuration>
-                    <deploy.project>staging-can-work</deploy.project>
-                    <deploy.version>1</deploy.version>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>appengine-maven-plugin</artifactId>
+				<version>1.3.2</version>
+				<configuration>
+					<deploy.project>canwork-io</deploy.project>
+					<deploy.version>1</deploy.version>
+				</configuration>
+			</plugin>
 			<!-- jhipster-needle-maven-add-plugin -->
 		</plugins>
 		<pluginManagement>
@@ -878,12 +867,6 @@
 			<id>prod-gae</id>
 			<properties>
 				<spring.profiles.active>prod${profile.swagger}${profile.no-liquibase},prod-gae</spring.profiles.active>
-			</properties>
-		</profile>
-		<profile>
-			<id>prod-gaep</id>
-			<properties>
-				<spring.profiles.active>prod${profile.swagger}${profile.no-liquibase},prod-gaep</spring.profiles.active>
 			</properties>
 		</profile>
 	</profiles>
