@@ -147,7 +147,7 @@ public class TxResource {
 		GCLOUD_KEY = configRepository.findOneByKey("GCLOUD_KEY").getValue();
 		SENDGRID_USERNAME = configRepository.findOneByKey("SENDGRID_USERNAME").getValue();
 		SENDGRID_PASSWORD = configRepository.findOneByKey("SENDGRID_PASSWORD").getValue();
-		
+
 		try {
 			InputStream stream = new ByteArrayInputStream(GCLOUD_KEY.getBytes(StandardCharsets.UTF_8));
 
@@ -237,6 +237,7 @@ public class TxResource {
 					ObjectMapper jsonParserClient = new ObjectMapper();
 
 					Etherscan etherscan = jsonParserClient.readValue(result.toString(), Etherscan.class);
+					Transaction txData = transactionRepository.findOneByOrderid(tx.getOrderid());
 					for (Result ethplorer : etherscan.getResult()) {
 						Date longdate = new java.util.Date(Long.parseLong(ethplorer.getTimeStamp()) * 1000);
 						SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -247,17 +248,110 @@ public class TxResource {
 								&& Double.compare(value, comparedValue) == 0) {
 							log.debug("Tx Processed {}", tx.getOrderid());
 							System.out.println("Tx Processed {}");
-							Transaction txData = transactionRepository.findOneByOrderid(tx.getOrderid());
+
 							txData.setStatus(Status.IDENTIFIED.name());
 							txData.setHash(ethplorer.getHash());
 							txData.setDate(dateString);
 							transactionRepository.save(txData);
 
-							timer.cancel();
 							break;
 						}
 					}
+
 					request.releaseConnection();
+
+					log.debug("Called staging {}", txData);
+					System.out.println("Transferring");
+
+					txData.setStatus(Status.AUTHENTICATED.name());
+
+					Web3j web3 = Web3j.build(new HttpService(CAN_INFURA));
+					Transaction txDatac = transactionRepository.findOneByOrderid(transaction.getKey());
+
+					try {
+
+						BigInteger gasprice = web3.ethGasPrice().send().getGasPrice();
+						System.out.println("Gas Price " + gasprice);
+						log.debug("Gas Price {}", gasprice);
+						BigInteger gaslimit = BigInteger.valueOf(90000);
+						BigDecimal value = new BigDecimal(txData.getAmount());
+						CanYaCoin contract = CanYaCoin.load(CAN_CONTRACT, web3, credentials, gasprice, gaslimit);
+
+						BigDecimal valueToMultiply = new BigDecimal("1000000");
+
+						BigDecimal s = value.multiply(valueToMultiply);
+
+						System.out.println("Address is " + txDatac.getAddress());
+						TransactionReceipt transactionReceipt = contract
+								.transfer(txDatac.getAddress(), s.toBigInteger()).send();
+						System.out.println("HASH " + transactionReceipt.getTransactionHash());
+						System.out.println("SUCCESS");
+						txDatac.setStatus(Status.TRANSFERRED.name());
+						txDatac.setHashethertoaccount(transactionReceipt.getTransactionHash());
+						log.debug("CAN Sent {}", txDatac);
+						transactionRepository.save(txDatac);
+
+						if (StringUtils.equals(txDatac.getStatus(), Status.TRANSFERRED.name())) {
+							counter = 0;
+							url = "http://api" + CAN_NETWORK + "etherscan.io/api?module=account&action=tokentx&address="
+									+ txData.getAddress() + "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
+
+							try {
+
+								if (counter == 360) {
+									txData = transactionRepository.findOneByOrderid(txDatac.getOrderid());
+									txData.setStatus(Status.TIMEOUT.name());
+									transactionRepository.save(txData);
+									timer.cancel();
+								}
+								counter++;
+								client = HttpClientBuilder.create().build();
+								request = new HttpGet(url);
+								response = client.execute(request);
+								System.out.println(url);
+								System.out.println("Response Code 1 : " + response.getStatusLine().getStatusCode());
+
+								rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+								result = new StringBuffer();
+								line = "";
+								while ((line = rd.readLine()) != null) {
+									result.append(line);
+								}
+								rd.close();
+								request.abort();
+
+								jsonParserClient = new ObjectMapper();
+
+								etherscan = jsonParserClient.readValue(result.toString(), Etherscan.class);
+
+								for (Result ethplorer : etherscan.getResult()) {
+									if (StringUtils.equals(txDatac.getHashethertoaccount(), ethplorer.getHash())) {
+										System.out.println("DONE " + txDatac.getHashethertoaccount());
+										log.debug("CAN Confirmed {}", txDatac);
+										txDatac.setStatus(Status.COMPLETE.name());
+										txDatac.setHash(ethplorer.getHash());
+										transactionRepository.save(txDatac);
+
+										timer.cancel();
+										break;
+									}
+
+								}
+								request.releaseConnection();
+							} catch (Exception e) {
+								txDatac.setStatus(Status.ERROR.name());
+								transactionRepository.save(txDatac);
+								e.printStackTrace();
+							}
+
+						}
+
+					} catch (Exception e) {
+						txDatac.setStatus(Status.ERROR.name());
+						transactionRepository.save(txDatac);
+						e.printStackTrace();
+					}
 
 				} catch (Exception e) {
 					log.error("Tx Error {}", e.getMessage());
@@ -267,6 +361,7 @@ public class TxResource {
 
 			}
 		}, 0, 1000 * Seconds);
+
 	}
 
 	public static String compareDates(String d1, String d2) {
@@ -353,7 +448,7 @@ public class TxResource {
 		properties.setProperty("mail.transport.protocol", "smtp");
 		properties.setProperty("mail.smtp.auth", "true");
 		properties.setProperty("mail.smtp.starttls.enable", "true");
- 		properties.setProperty("mail.smtp.host", "smtp.sendgrid.net");
+		properties.setProperty("mail.smtp.host", "smtp.sendgrid.net");
 		properties.setProperty("mail.smtp.port", "587");
 		properties.setProperty("mail.smtp.ssl.trust", "smtp.sendgrid.net");
 		javaMailSender.setJavaMailProperties(properties);
@@ -447,109 +542,6 @@ public class TxResource {
 	@PostMapping("/staging")
 	@Async
 	public void sendStagingActivity(@RequestBody TransactionDTO txData) {
-
-		log.debug("Called staging {}", txData);
-		System.out.println("Transferring");
-
-		txData.setStatus(Status.AUTHENTICATED.name());
-
-		Web3j web3 = Web3j.build(new HttpService(CAN_INFURA));
-		Transaction txDatac = transactionRepository.findOneByOrderid(txData.getKey());
-
-		try {
-
-			BigInteger gasprice = web3.ethGasPrice().send().getGasPrice();
-			System.out.println("Gas Price " + gasprice);
-			log.debug("Gas Price {}", gasprice);
-			BigInteger gaslimit = BigInteger.valueOf(90000);
-			BigDecimal value = new BigDecimal(txData.getAmount());
-			CanYaCoin contract = CanYaCoin.load(CAN_CONTRACT, web3, credentials, gasprice, gaslimit);
-
-			BigDecimal valueToMultiply = new BigDecimal("1000000");
-
-			BigDecimal s = value.multiply(valueToMultiply);
-
-			System.out.println("Address is " + txDatac.getAddress());
-			TransactionReceipt transactionReceipt = contract.transfer(txDatac.getAddress(), s.toBigInteger()).send();
-			System.out.println("HASH " + transactionReceipt.getTransactionHash());
-			System.out.println("SUCCESS");
-			txDatac.setStatus(Status.TRANSFERRED.name());
-			txDatac.setHashethertoaccount(transactionReceipt.getTransactionHash());
-			log.debug("CAN Sent {}", txDatac);
-			transactionRepository.save(txDatac);
-
-		} catch (Exception e) {
-			txDatac.setStatus(Status.ERROR.name());
-			transactionRepository.save(txDatac);
-			e.printStackTrace();
-		}
-
-		if (StringUtils.equals(txDatac.getStatus(), Status.TRANSFERRED.name())) {
-
-			String url = "http://api" + CAN_NETWORK + "etherscan.io/api?module=account&action=tokentx&address="
-					+ txData.getAddress() + "&startblock=0&endblock=999999999&sort=asc&apikey=" + key;
-
-			Timer timer = new Timer();
-			long Seconds = 10;
-			timer.schedule(new TimerTask() {
-
-				int counter = 0;
-
-				@Override
-				public void run() {
-					try {
-
-						if (counter == 360) {
-							Transaction txData = transactionRepository.findOneByOrderid(txDatac.getOrderid());
-							txData.setStatus(Status.TIMEOUT.name());
-							transactionRepository.save(txData);
-							timer.cancel();
-						}
-						counter++;
-						HttpClient client = HttpClientBuilder.create().build();
-						HttpGet request = new HttpGet(url);
-						HttpResponse response = client.execute(request);
-						System.out.println(url);
-						System.out.println("Response Code 1 : " + response.getStatusLine().getStatusCode());
-
-						BufferedReader rd = new BufferedReader(
-								new InputStreamReader(response.getEntity().getContent()));
-
-						StringBuffer result = new StringBuffer();
-						String line = "";
-						while ((line = rd.readLine()) != null) {
-							result.append(line);
-						}
-						rd.close();
-						request.abort();
-
-						ObjectMapper jsonParserClient = new ObjectMapper();
-
-						Etherscan etherscan = jsonParserClient.readValue(result.toString(), Etherscan.class);
-
-						for (Result ethplorer : etherscan.getResult()) {
-							if (StringUtils.equals(txDatac.getHashethertoaccount(), ethplorer.getHash())) {
-								System.out.println("DONE " + txDatac.getHashethertoaccount());
-								log.debug("CAN Confirmed {}", txDatac);
-								txDatac.setStatus(Status.COMPLETE.name());
-								txDatac.setHash(ethplorer.getHash());
-								transactionRepository.save(txDatac);
-
-								timer.cancel();
-								break;
-							}
-
-						}
-						request.releaseConnection();
-					} catch (Exception e) {
-						txDatac.setStatus(Status.ERROR.name());
-						transactionRepository.save(txDatac);
-						e.printStackTrace();
-					}
-
-				}
-			}, 0, 1000 * Seconds);
-		}
 
 	}
 
