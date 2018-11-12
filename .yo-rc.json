@@ -26,13 +26,14 @@
     "jhiPrefix": "jhi",
     "clientPackageManager": "npm",
     "skipClient": true,
-    "gcpProjectId": "staging-can-work",
-    "gcpCloudSqlInstanceName": "staging-can-work:australia-southeast1:canwork-staging",
+    "gcpProjectId": "canwork-io",
+    "gcpCloudSqlInstanceName": "canwork-io:australia-southeast1:canwork-io",
     "gcpCloudSqlUserName": "canya",
     "gaeServiceName": "default",
     "gaeLocation": "us-central",
-    "gaeInstanceClass": "B1",
+    "gaeInstanceClass": "B4",
     "gaeScalingType": "manual",
-    "gaeInstances": "1"
+    "gaeInstances": "1",
+    "enableHibernateCache": false
   }
 }
