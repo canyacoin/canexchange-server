@@ -250,7 +250,7 @@ public class TxResource {
 
 							System.out.println("Double ---- " + comparedValue + " equals to " + value);
 							if (StringUtils.equals(compareDates(dateString, dateFormat.format(date)), "after")
-									&& StringUtils.equals(value, comparedValue)) {
+									&& StringUtils.contains(value, comparedValue)) {
 								log.debug("Tx Processed {}", tx.getOrderid());
 								System.out.println("Tx Processed {}");
 								txData.setStatus(Status.IDENTIFIED.name());
@@ -293,7 +293,7 @@ public class TxResource {
 									.transfer(txDatac.getAddress(), s.toBigInteger()).send();
 							System.out.println("HASH " + transactionReceipt.getTransactionHash());
 							System.out.println("SUCCESS");
-							txDatac.setStatus(Status.TRANSFERRED.name());
+							txDatac.setStatus(Status.COMPLETE.name());
 							txDatac.setHashethertoaccount(transactionReceipt.getTransactionHash());
 							log.debug("CAN Sent {}", txDatac);
 							transactionRepository.save(txDatac);
