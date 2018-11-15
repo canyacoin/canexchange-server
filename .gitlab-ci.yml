@@ -17,11 +17,11 @@ before_script:
     - export MAVEN_USER_HOME=`pwd`/.maven
 
     
-deploy:staging:
+deploy:production:
     image: google/cloud-sdk
     stage: deploy
     environment:
-      name: staging
+      name: production
     script:
       - echo "Deploy to staging target GAE instance with project ID $GCP_PROJECT_ID"
       - echo -n "$GCP_KEY" > /builds/canya-com/canexchange/key.json
