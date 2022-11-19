@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -484,7 +485,7 @@ public class TxResource {
 	}
 
 	public static File stream2file(InputStream in) throws IOException {
-		final File tempFile = File.createTempFile("src/main/resources/stream2file", ".tmp");
+		final File tempFile = Files.createTempFile("src/main/resources/stream2file", ".tmp").toFile();
 		tempFile.deleteOnExit();
 		try (FileOutputStream out = new FileOutputStream(tempFile)) {
 			IOUtils.copy(in, out);
